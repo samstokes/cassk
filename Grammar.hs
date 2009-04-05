@@ -17,6 +17,7 @@ data CssToken = Ident [Char]
 
 css_token :: CharParser st CssToken
 -- based on http://www.w3.org/TR/CSS21/syndata.html#tokenization
+-- TODO implement parsers for all the tokens
 css_token = (try ident)
     {-<|> atkeyword-}
     <|> (try css_string)
@@ -64,6 +65,10 @@ comment = do
   string "/"
   return $ Comment (part1 ++ (concat part2))
 
+-- TODO delim isn't supposed to be such a catch-all
+-- (in fact in http://www.w3.org/TR/CSS21/grammar.html it's not even
+-- mentioned, but in http://www.w3.org/TR/CSS21/syndata.html#tokenization
+-- it is...)
 delim = oneOf ",.*{}()[]<>:;=+!" >>= \c -> return $ Delim c
 
 percentage = do
