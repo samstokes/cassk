@@ -54,7 +54,7 @@ comment = do
   string "/"
   return $ Comment (part1 ++ (concat part2))
 
-delim = do { c <- oneOf ",.{}():;"; return $ Delim c }
+delim = oneOf ",.{}():;" >>= \c -> return $ Delim c
 
 percentage = do
   num <- parse_number
