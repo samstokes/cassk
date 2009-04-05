@@ -1,7 +1,6 @@
 module Grammar
 ( CssToken
 , css_token
-, parse_number
 ) where
 
 import Text.ParserCombinators.Parsec
