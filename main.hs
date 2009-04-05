@@ -1,6 +1,6 @@
 import Text.ParserCombinators.Parsec (CharParser, many, parse, eof)
 
-import Grammar
+import Grammar.Token
 
 css_tokens :: CharParser st [CssToken]
 css_tokens = do

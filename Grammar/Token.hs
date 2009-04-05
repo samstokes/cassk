@@ -1,4 +1,4 @@
-module Grammar
+module Grammar.Token
 ( CssToken
 , css_token
 ) where
