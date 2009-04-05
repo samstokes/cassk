@@ -1,13 +1,7 @@
-import Text.ParserCombinators.Parsec (CharParser, many, parse, eof)
+import Text.ParserCombinators.Parsec (parseTest)
 
-import Grammar.Token
+import Grammar.AST
 
-css_tokens :: CharParser st [CssToken]
-css_tokens = do
-  them <- many css_token
-  eof
-  return them
-
-main = interact $ debug . (parse css_tokens "")
-    where debug (Left error) = show error
-          debug (Right tokens) = unlines $ map show tokens
+main = do
+  contents <- getContents
+  parseTest stylesheet contents

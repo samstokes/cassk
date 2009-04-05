@@ -1,6 +1,8 @@
 module Grammar.Token
-( CssToken
+( CssToken(Ident)
 , css_token
+, ident
+, whitespace
 ) where
 
 import Text.ParserCombinators.Parsec
@@ -39,12 +41,14 @@ css_token = (try ident)
     <|> delim
 
 nmchar = char '_' <|> letter <|> digit <|> char '-'
+  <?> "name character"
 
 ident = do
   hyphen <- option "" (string "-")
   first <- char '_' <|> letter
   rest <- many nmchar
   return (Ident (hyphen ++ (first : rest)))
+  <?> "identifier"
 
 hash = do
   char '#'
@@ -52,6 +56,7 @@ hash = do
   return $ Hash name
 
 whitespace = many1 space >> return S
+  <?> "whitespace"
 
 comment = do
   -- FIXME doesn't return contents of comment correctly
