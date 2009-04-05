@@ -77,9 +77,10 @@ number = do
 
 parse_number :: CharParser st Float
 parse_number = do
+    negation <- option "" $ string "-"
     ipart <- many1 digit -- FIXME doesn't allow numbers of form .3
     -- TODO figure out how to make this grammatical without being a one-liner
-    (try (do { char '.'; fpart <- many1 digit; return (read (ipart ++ "." ++ fpart) :: Float) })) <|> return (read ipart :: Float)
+    (try (do { char '.'; fpart <- many1 digit; return (read (negation ++ ipart ++ "." ++ fpart) :: Float) })) <|> return (read (negation ++ ipart) :: Float)
 
 css_string = do
   contents <- quoted_string '"' <|> quoted_string '\''
