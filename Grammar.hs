@@ -6,6 +6,8 @@ module Grammar
 import Text.ParserCombinators.Parsec
 
 data CssToken = Ident [Char]
+              | CssString [Char]
+              | Hash [Char]
               | Number Float
               | Percentage Float
               | S
@@ -14,11 +16,12 @@ data CssToken = Ident [Char]
     deriving (Show)
 
 css_token :: CharParser st CssToken
+-- based on http://www.w3.org/TR/CSS21/syndata.html#tokenization
 css_token = (try ident)
     {-<|> atkeyword-}
-    {-<|> string-}
+    <|> (try css_string)
     {-<|> invalid-}
-    {-<|> hash-}
+    <|> hash
     <|> (try percentage)
     <|> (try number)
     {-<|> dimension-}
@@ -34,11 +37,18 @@ css_token = (try ident)
     {-<|> dashmatch-}
     <|> delim
 
+nmchar = char '_' <|> letter <|> digit <|> char '-'
+
 ident = do
-    hyphen <- option "" (string "-")
-    first <- char '_' <|> letter
-    rest <- many (char '_' <|> letter <|> digit <|> char '-')
-    return (Ident (hyphen ++ (first : rest)))
+  hyphen <- option "" (string "-")
+  first <- char '_' <|> letter
+  rest <- many nmchar
+  return (Ident (hyphen ++ (first : rest)))
+
+hash = do
+  char '#'
+  name <- many nmchar
+  return $ Hash name
 
 whitespace = many1 space >> return S
 
@@ -54,7 +64,7 @@ comment = do
   string "/"
   return $ Comment (part1 ++ (concat part2))
 
-delim = oneOf ",.{}():;" >>= \c -> return $ Delim c
+delim = oneOf ",.*{}():;" >>= \c -> return $ Delim c
 
 percentage = do
   num <- parse_number
@@ -70,3 +80,12 @@ parse_number = do
     ipart <- many1 digit -- FIXME doesn't allow numbers of form .3
     -- TODO figure out how to make this grammatical without being a one-liner
     (try (do { char '.'; fpart <- many1 digit; return (read (ipart ++ "." ++ fpart) :: Float) })) <|> return (read ipart :: Float)
+
+css_string = do
+  contents <- quoted_string '"' <|> quoted_string '\''
+  return $ CssString contents
+
+quoted_string :: Char -> CharParser st [Char]
+quoted_string quote = between qp qp (many $ noneOf (quote : "\n\r\f\\"))
+    -- TODO doesn't allow escaped newlines etc
+    where qp = string [quote]
